@@ -101,7 +101,7 @@ func NewLogplexRequest(url string, logs []*LogplexLogLine) (*http.Request, error
 func makeLogplexBody(logs []*LogplexLogLine) string {
 	lines := make([]string, 0, len(logs))
 	for _, logline := range logs {
-		line := fmt.Sprintf("%v %v %v %v %v %v %v\n",
+		line := fmt.Sprintf("%s %s %s %s %s %s %s\n",
 			logline.Header.PrivalVersion,
 			logline.Header.Time,
 			logline.Header.Hostname,
@@ -109,7 +109,7 @@ func makeLogplexBody(logs []*LogplexLogLine) string {
 			logline.Header.Procid,
 			logline.Header.Msgid,
 			string(logline.Data))
-		line = fmt.Sprintf("%d %v", len(line), line)
+		line = fmt.Sprintf("%d %s", len(line), line)
 		lines = append(lines, line)
 	}
 
