@@ -21,16 +21,17 @@ func (ec *LogConsumer) ProcessRecords(
 	records []*kinesis.KclRecord,
 	checkpointer *kinesis.Checkpointer) error {
 
-	// var lastSeq string
+	var drainRecords []Record
 
 	for _, record := range records {
 		data, err := base64.StdEncoding.DecodeString(record.DataB64)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "base64 decode error: %v\n", err)
+			return err
 		}
-		if false {
-			fmt.Fprintf(os.Stderr, "log: %s\n", string(data))
-		}
+
+		drainRecords = append(drainRecords, Record{record.PartitionKey, data})
+		HandleRecords(drainRecords)
 	}
 
 	// Abort execution on checkpointing errors.  We could retry here instead if
