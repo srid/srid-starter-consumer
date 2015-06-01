@@ -25,11 +25,16 @@ func (r *Record) decodeLogplex() (*LogplexLogLine, error) {
 }
 
 func HandleRecords(records []Record) {
-
+	for _, record := range records {
+		theOnlyDrain.ch <- record
+	}
 }
 
-func init() {
+var theOnlyDrain *Drain
 
+func init() {
+	theOnlyDrain = NewDrain(config.DrainUrl)
+	go theOnlyDrain.Start()
 }
 
 type Drain struct {
