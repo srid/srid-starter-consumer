@@ -13,7 +13,7 @@ type LogConsumer struct {
 
 func (ec *LogConsumer) Init(shardId string) error {
 	ec.shardId = shardId
-	fmt.Fprintf(os.Stderr, "init: %s\n", shardId)
+	// fmt.Fprintf(os.Stderr, "init: %s\n", shardId)
 	return nil
 }
 
@@ -43,7 +43,7 @@ func (ec *LogConsumer) Shutdown(
 	shutdownType kinesis.ShutdownType,
 	checkpointer *kinesis.Checkpointer) error {
 
-	fmt.Fprintf(os.Stderr, "shutdown: %s\n", shutdownType)
+	// fmt.Fprintf(os.Stderr, "shutdown: %s\n", shutdownType)
 	if shutdownType == kinesis.GracefulShutdown {
 		if err := checkpointer.CheckpointAll(); err != nil {
 			return err
