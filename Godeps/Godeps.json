@@ -1,0 +1,20 @@
+{
+	"ImportPath": "srid-starter-consumer",
+	"GoVersion": "go1.4.2",
+	"Deps": [
+		{
+			"ImportPath": "github.com/kelseyhightower/envconfig",
+			"Comment": "v1.0.0-14-g43da5b7",
+			"Rev": "43da5b79aea0685e4559667d3c88a5cb19c460c5"
+		},
+		{
+			"ImportPath": "github.com/nieksand/gokinesis/src/kinesis",
+			"Rev": "173138b8201b4ab31dbe0c3ca1b469b741839618"
+		},
+		{
+			"ImportPath": "github.com/sendgridlabs/go-kinesis",
+			"Comment": "1.0.0",
+			"Rev": "50e10d7aeb4f1a6475090daacd5dcaa75f5763a5"
+		}
+	]
+}
