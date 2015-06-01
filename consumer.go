@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/nieksand/gokinesis/src/kinesis"
-	"os"
 )
 
 type LogConsumer struct {
