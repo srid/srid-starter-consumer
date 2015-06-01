@@ -1,1 +1,1 @@
-worker: java -jar bin/*.jar etc/worker.properties etc/*.properties
+worker: java -cp "etc:bin/amazon-kinesis-client-1.3.0-jar-with-dependencies.jar" com.amazonaws.services.kinesis.multilang.MultiLangDaemon MultiLangDaemon.properties
