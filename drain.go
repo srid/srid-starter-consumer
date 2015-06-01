@@ -59,7 +59,7 @@ func (d *Drain) Start() {
 	for record := range d.ch {
 		logline, err := record.decodeLogplex()
 		if err != nil {
-			logError(fmt.Sprintf("Failed to decode log line: %v\n", err))
+			logError(fmt.Sprintf("Failed to decode log line (%v): %v\n", string(record.data), err))
 			continue
 		}
 
