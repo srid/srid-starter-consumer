@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/nieksand/gokinesis/src/kinesis"
 	"os"
@@ -20,8 +21,16 @@ func (ec *LogConsumer) ProcessRecords(
 	records []*kinesis.KclRecord,
 	checkpointer *kinesis.Checkpointer) error {
 
+	// var lastSeq string
+
 	for _, record := range records {
-		fmt.Fprintf(os.Stderr, "log: %s\n", record.DataB64)
+		data, err := base64.StdEncoding.DecodeString(record.DataB64)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "base64 decode error: %v\n", err)
+		}
+		if false {
+			fmt.Fprintf(os.Stderr, "log: %s\n", string(data))
+		}
 	}
 
 	// Abort execution on checkpointing errors.  We could retry here instead if
