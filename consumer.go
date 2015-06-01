@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/nieksand/kinesis/src/kinesis"
+	"github.com/nieksand/gokinesis/src/kinesis"
 	"os"
 )
 
