@@ -1,0 +1,1 @@
+worker: java -jar bin/*.jar etc/worker.properties
