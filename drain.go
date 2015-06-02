@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/bmizerany/lpx"
+	"github.com/srid/drain"
 	"net/http"
 	"strings"
 )
@@ -18,10 +19,10 @@ type LogplexLogLine struct {
 	Data   []byte
 }
 
-func (r *Record) decodeLogplex() (*LogplexLogLine, error) {
-	var logline LogplexLogLine
-	err := json.Unmarshal(r.data, &logline)
-	return &logline, err
+func (r *Record) decodeDrainRecord() (*drain.Record, error) {
+	var record drain.Record
+	err := json.Unmarshal(r.data, &record)
+	return &record, err
 }
 
 func HandleRecords(records []Record) {
@@ -56,16 +57,18 @@ func NewDrain(url string) *Drain {
 
 func (d *Drain) Start() {
 	// TODO: open pesistent http connection
-	for record := range d.ch {
-		logline, err := record.decodeLogplex()
+	for kinesisRecord := range d.ch {
+		drainRecord, err := kinesisRecord.decodeDrainRecord()
 		if err != nil {
-			logError(fmt.Sprintf("Invalid JSON {{{%v}}}: %v\n", string(record.data), err))
+			logError(fmt.Sprintf("Invalid JSON {{{%v}}}: %v\n", string(kinesisRecord.data), err))
 			continue
 		}
 
 		// TODO: buffer records
 		// ...
-		req, err := NewLogplexRequest(d.url, []*LogplexLogLine{logline})
+		drainRecords := []*drain.Record{drainRecord}
+
+		req, err := NewLogplexRequest(d.url, drainRecords)
 		if err != nil {
 			logError(err.Error())
 			continue
@@ -82,8 +85,8 @@ func (d *Drain) Start() {
 	}
 }
 
-func NewLogplexRequest(url string, logs []*LogplexLogLine) (*http.Request, error) {
-	body := makeLogplexBody(logs)
+func NewLogplexRequest(url string, logs []*drain.Record) (*http.Request, error) {
+	body := drain.MakeLogplexFrame(logs)
 	req, err := http.NewRequest(
 		"POST",
 		url,
@@ -92,26 +95,7 @@ func NewLogplexRequest(url string, logs []*LogplexLogLine) (*http.Request, error
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/logplex-1")
-	req.Header.Set("User-Agent", "SridStarterProject/v1.dev")
+	req.Header.Set("User-Agent", "SridStarterProject/v2.dev")
 	req.Header.Set("Content-Length", string(len(body)))
 	return req, nil
-}
-
-// 70 <174>1 2012-07-22T00:06:26+00:00 host erlang console - Hi from erlang
-func makeLogplexBody(logs []*LogplexLogLine) string {
-	lines := make([]string, 0, len(logs))
-	for _, logline := range logs {
-		line := fmt.Sprintf("%s %s %s %s %s %s %s\n",
-			logline.Header.PrivalVersion,
-			logline.Header.Time,
-			logline.Header.Hostname,
-			logline.Header.Name,
-			logline.Header.Procid,
-			logline.Header.Msgid,
-			string(logline.Data))
-		line = fmt.Sprintf("%d %s", len(line), line)
-		lines = append(lines, line)
-	}
-
-	return strings.Join(lines, "")
 }
