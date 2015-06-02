@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/srid/drain"
 	"strings"
 )
@@ -48,7 +49,11 @@ func (mgr *DrainManager) Run() {
 
 func (mgr *DrainManager) SendRecord(record *drain.Record) {
 	appToken := string(record.Header.Name)
-	for _, drain := range mgr.drains[appToken] {
+	drainsForApp, ok := mgr.drains[appToken]
+	if !ok {
+		logError(fmt.Sprintf("No drains running for app token: %s\n", appToken))
+	}
+	for _, drain := range drainsForApp {
 		drain.Send(record)
 	}
 }
