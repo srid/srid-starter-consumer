@@ -21,7 +21,7 @@ func (ec *LogConsumer) ProcessRecords(
 	records []*kinesis.KclRecord,
 	checkpointer *kinesis.Checkpointer) error {
 
-	var drainRecords []Record
+	var drainRecords []KinesisRecord
 
 	for _, record := range records {
 		data, err := base64.StdEncoding.DecodeString(record.DataB64)
@@ -30,9 +30,12 @@ func (ec *LogConsumer) ProcessRecords(
 			return err
 		}
 
-		drainRecords = append(drainRecords, Record{record.PartitionKey, data})
-		HandleRecords(drainRecords)
+		drainRecords = append(
+			drainRecords,
+			KinesisRecord{record.PartitionKey, data})
 	}
+
+	HandleRecords(drainRecords)
 
 	// Abort execution on checkpointing errors.  We could retry here instead if
 	// we wanted.

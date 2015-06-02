@@ -7,8 +7,8 @@ import (
 )
 
 type Config struct {
-	Port     string `envconfig:"PORT"`
-	DrainUrl string `envconfig:"DRAIN_URL"`
+	Port   string `envconfig:"PORT"`
+	Drains string `envconfig:"DRAINS"`
 }
 
 var config Config
@@ -17,8 +17,8 @@ func (c Config) validate() error {
 	if c.Port == "" {
 		return fmt.Errorf("$PORT is empty")
 	}
-	if c.DrainUrl == "" {
-		return fmt.Errorf("$DRAIN_URL is empty")
+	if c.Drains == "" {
+		return fmt.Errorf("$DRAINS is empty")
 	}
 	return nil
 }

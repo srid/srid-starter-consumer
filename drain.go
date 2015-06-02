@@ -3,67 +3,66 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/bmizerany/lpx"
 	"github.com/srid/drain"
+	"log"
 	"net/http"
 	"strings"
 )
 
-type Record struct {
+// kinesis.go
+
+type KinesisRecord struct {
 	partitionKey string
 	data         []byte
 }
 
-type LogplexLogLine struct {
-	Header *lpx.Header
-	Data   []byte
-}
-
-func (r *Record) decodeDrainRecord() (*drain.Record, error) {
+func (r *KinesisRecord) decodeDrainRecord() (*drain.Record, error) {
 	var record drain.Record
 	err := json.Unmarshal(r.data, &record)
 	return &record, err
 }
 
-func HandleRecords(records []Record) {
-	for _, record := range records {
-		theOnlyDrain.ch <- record
+func HandleRecords(kinesisRecords []KinesisRecord) {
+	for _, kinesisRecord := range kinesisRecords {
+		record, err := kinesisRecord.decodeDrainRecord()
+		if err != nil {
+			log.Printf("ERROR: invalid json from kinesis: %v\n", err)
+			continue
+		}
+
+		drainManager.SendRecord(record)
+		// theOnlyDrain.ch <- record
 	}
 }
 
-var theOnlyDrain *Drain
-
-func init() {
-	theOnlyDrain = NewDrain(config.DrainUrl)
-	go theOnlyDrain.Start()
-}
+// drain.go
 
 type Drain struct {
-	url    string
-	client *http.Client
-	ch     chan Record
+	url      string
+	appToken string
+	client   *http.Client
+	ch       chan *drain.Record
 }
 
 // TODO: make this an env
 const DRAIN_BUFFER = 100
 
-func NewDrain(url string) *Drain {
+func NewDrain(appToken, url string) *Drain {
 	d := new(Drain)
+	d.appToken = appToken
 	d.url = url
-	d.ch = make(chan Record, DRAIN_BUFFER)
+	d.ch = make(chan *drain.Record, DRAIN_BUFFER)
 	d.client = &http.Client{}
 	return d
 }
 
+func (d *Drain) Send(record *drain.Record) {
+	d.ch <- record
+}
+
 func (d *Drain) Start() {
 	// TODO: open pesistent http connection
-	for kinesisRecord := range d.ch {
-		drainRecord, err := kinesisRecord.decodeDrainRecord()
-		if err != nil {
-			logError(fmt.Sprintf("Invalid JSON {{{%v}}}: %v\n", string(kinesisRecord.data), err))
-			continue
-		}
-
+	for drainRecord := range d.ch {
 		// TODO: buffer records
 		// ...
 		drainRecords := []*drain.Record{drainRecord}
