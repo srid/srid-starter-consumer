@@ -52,6 +52,7 @@ func (mgr *DrainManager) SendRecord(record *drain.Record) {
 	drainsForApp, ok := mgr.drains[appToken]
 	if !ok {
 		logError(fmt.Sprintf("No drains running for app token: %s\n", appToken))
+		return
 	}
 	for _, drain := range drainsForApp {
 		drain.Send(record)
